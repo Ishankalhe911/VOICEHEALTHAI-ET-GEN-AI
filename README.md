@@ -1,96 +1,31 @@
 # 🎙️ VERNAI – VoiceHealth AI
 
-**Voice-First Healthcare Guidance for India’s Underserved**
+**Voice-First, Multi-Agent Healthcare Guidance for India's Underserved**
 
 ---
 
 ## 🚨 Problem
 
-A large portion of India’s population relies on **regional languages and voice interaction**, yet most digital healthcare tools are:
+A large portion of India's population relies on **regional languages and voice interaction**, yet most digital healthcare tools are:
 
-* Text-heavy
-* English-first
-* Difficult for low-literacy users
+- Text-heavy and English-first
+- Difficult for low-literacy users
+- Disconnected from local disease outbreaks and seasonal health trends
 
-This leads to:
-
-* Misunderstanding of basic symptoms
-* Delayed preventive action
-* Unnecessary clinic visits
-* Lack of awareness about financial preparedness
+This leads to misunderstanding of basic symptoms, delayed preventive action, and lack of awareness about available healthcare schemes.
 
 ---
 
 ## 💡 Solution
 
-**VoiceHealth AI** is a **voice-first healthcare assistant** that provides:
+**VoiceHealth AI (VERNAI)** is a voice-first, multi-agent healthcare assistant that:
 
-* 🗣️ Regional language interaction (Hindi, Tamil → scalable)
-* 🛡️ Safe, non-diagnostic health guidance
-* 📍 Region-aware advisories (seasonal + local data)
-* 💬 WhatsApp-style accessibility (low adoption friction)
-
-👉 Designed for **people who cannot or prefer not to type/read**
-
----
-
-## ⚙️ How It Works
-
-1. **User speaks** in regional language
-2. **ASR (Speech-to-Text)** converts voice → text
-3. **Intent Detection (NLP)** identifies health concern
-4. **Guardrail Engine**:
-
-   * Blocks diagnosis
-   * Detects emergency cases
-5. **Intent → Advisory Mapping**:
-
-   * Maps input to verified public health guidance
-6. **Response Generation**:
-
-   * Template-based, rule-constrained
-   * No open-ended AI output
-7. **Text-to-Speech (TTS)** returns response in user’s language
-
----
-
-## 🧠 System Design Principles
-
-* **Voice-first, not voice-enabled**
-* **Safety over completeness**
-* **Verified knowledge only (no hallucination)**
-* **Low cognitive load for users**
-
----
-
-## 🛡️ Safety & Guardrails
-
-* ❌ No medical diagnosis
-* ❌ No treatment prescriptions
-* ✅ Only preventive & awareness guidance
-* ✅ Emergency escalation detection
-* ✅ Controlled responses from verified sources
-
-> All responses are template-based and constrained to trusted public health advisories.
-
----
-
-## 📊 Data Sources
-
-* Ministry of Health and Family Welfare (MoHFW)
-* Indian Council of Medical Research (ICMR)
-* State health bulletins
-* WHO public health recommendations
-
-👉 No personal health data is used.
-
----
-
-## 🧪 Validation Approach
-
-* **ASR Testing** → accuracy of regional speech transcription
-* **Intent Mapping** → correct advisory selection
-* **Latency Check** → <5–10 seconds response time
+- 🗣️ Accepts voice input in **Hindi and Tamil** (scalable to more languages)
+- 🛡️ Enforces strict **safety guardrails** — no diagnosis, no prescriptions
+- 📍 Delivers **region-aware, live advisories** using real-time data from IDSP, MoHFW, IMD, and trusted news sources
+- 🏥 Dynamically maps the user's location to local state health insurance schemes (e.g., CMCHIS in Tamil Nadu) or defaults to Ayushman Bharat
+- 🔊 Responds in the **user's own language** via high-quality Indic TTS
+- ⚡ End-to-end response in **under 10 seconds**
 
 ---
 
@@ -98,77 +33,251 @@ This leads to:
 
 **Priya (58, rural Maharashtra)**
 
-* Speaks in Hindi: *“Mere pote ko bukhar hai, kya karu?”*
-* System:
+She speaks in Hindi: *"Mujhe bahut garmi lag rahi hai aur chakkar aa rahe hain"*
+*(Translation: "I'm feeling very hot and dizzy")*
 
-  * Detects fever-related concern
-  * Checks seasonal advisory (e.g., dengue/viral)
-  * Responds with:
+The system:
+1. Transcribes her voice using Groq Whisper Large V3
+2. Classifies it as safe (not an emergency, not a diagnosis request)
+3. Searches IDSP, MoHFW, and IMD for live heatwave advisories in Pune
+4. Generates a clear, empathetic Hindi advisory using Gemini 2.5 Pro
+5. Speaks the response back to her in Hindi via Sarvam AI TTS (bulbul:v3)
 
-    * Basic care steps
-    * Warning signs
-    * When to visit a doctor
+**Output:** *"पुणे में IMD ने हीटवेव अलर्ट जारी किया है। खूब पानी पिएं, ORS लें, और धूप में न निकलें। डॉक्टर से मिलें यदि स्थिति बिगड़े।"*
 
-👉 No diagnosis. No jargon. Clear voice guidance.
-
----
-
-## 🚀 What Makes It Different
-
-| Feature      | VoiceHealth AI  | General Chatbots | Health Apps      |
-| ------------ | --------------- | ---------------- | ---------------- |
-| Interface    | Voice-first     | Text-first       | Text-heavy       |
-| Language     | Regional        | Mostly English   | Mostly English   |
-| Safety       | Guardrail-based | Open-ended       | Limited          |
-| Context      | Region-aware    | Generic          | Generic          |
-| Target Users | Low-literacy    | Tech-savvy       | Smartphone users |
+No diagnosis. No jargon. Clear voice guidance in under 10 seconds.
 
 ---
 
-## ⚙️ Tech Stack (Conceptual)
+## ⚙️ Multi-Agent Architecture
 
-* **ASR**: Whisper / Multilingual Speech Models
-* **NLP**: LLM + Rule-based Intent Classification
-* **Backend**: Python / Node.js
-* **Deployment**: WhatsApp API (Twilio)
-* **TTS**: Regional language speech synthesis
+VERNAI is built as a pipeline of 5 specialised agents, each with a single responsibility:
+
+```
+User Voice Input
+      │
+      ▼
+┌──────────────────────────────────────────────────────┐
+│  Agent 1: Intake Agent                               │
+│  Audio-to-Text: Groq Whisper Large V3                │
+│  Translation & Cleanup: Groq Llama 3.3 70b           │
+└────────────────────┬─────────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────────┐
+│  Agent 2: Guardrail Agent                            │
+│  Safety Classification: Groq Llama 3.3 70b           │
+│  Category A → Block (Emergency / Diagnosis request)  │
+│  Category B → Pass (Safe informational query)        │
+└────────────────────┬─────────────────────────────────┘
+                     │ (only Category B passes)
+                     ▼
+┌──────────────────────────────────────────────────────┐
+│  Agent 3: Research Agent                             │
+│  Live Health Data: Serper.dev (Google Search API)    │
+│  5-Level Priority Fallback Chain                     │
+│  Custom Relevance Scoring Engine                     │
+└────────────────────┬─────────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────────┐
+│  Agent 4: Synthesis Agent                            │
+│  Primary:  Gemini 2.5 Pro                            │
+│  Fallback: Groq Llama 3.3 70b (auto, no downtime)   │
+└────────────────────┬─────────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────────┐
+│  Agent 5: TTS Agent                                  │
+│  Sarvam AI bulbul:v3 (Hindi: Priya, Tamil: Rahul)   │
+└────────────────────┬─────────────────────────────────┘
+                     │
+                     ▼
+              Voice Response
+```
 
 ---
 
-## ⚠️ Challenges
+## 🔬 Research Agent — Deep Dive
 
-* ASR accuracy across accents
-* Limited regional health datasets
-* Balancing safety vs helpfulness
-* Building trust among rural users
+The Research Agent is the most technically complex component. It solves the core challenge: **getting fresh, relevant, official health data in real time without hallucination.**
+
+### 5-Level Priority Fallback Chain
+
+All 3 API calls fire **simultaneously** using `asyncio.gather()` — max latency equals the slowest single call (~3-5s), not the sum.
+
+| Priority | Source | Trust Level |
+| :--- | :--- | :--- |
+| **P1** | IDSP Official (`site:idsp.mohfw.gov.in`) | Highest — government disease surveillance |
+| **P2** | Broad MoHFW / NCDC / NDMA / IMD search | High — official health + disaster + weather |
+| **P4** | Trusted news (NDTV, Times of India, The Hindu) | Medium — recent but not official |
+| **P5** | Static safe fallback message | Last resort — never crashes |
+
+> P3 (direct IDSP PDF scrape) dropped for MVP — PDFs cannot be parsed within a 10s response window. Planned for v2 with PyMuPDF pipeline.
+
+### Relevance Scoring Engine
+
+A custom heuristic scorer evaluates every result set — a result only scores a point if it matches **both** a symptom keyword AND the location. This prevents a result about Nipah virus in Kerala from scoring against a heatwave query in Pune.
+
+### Priority Override Mechanism
+
+If P4 (news) scores **2+ more relevance hits** than P2 (MoHFW), P4 wins — even though P2 has higher trust. This ensures the most symptom-specific data is always used.
+
+```
+Example: User says "feeling very hot, dizziness" in Pune
+→ P2 returns 10 MoHFW results  (score: 1 — mostly generic disease data)
+→ P4 returns 5 news results    (score: 4 — heatwave + IMD + Pune specific)
+→ OVERRIDE: P4 selected, logged clearly in console
+```
+
+---
+
+## 🛡️ Safety & Guardrails
+
+The Guardrail Agent runs on every request before any search or LLM synthesis:
+
+| Input Type | Action |
+| :--- | :--- |
+| Emergency symptoms (chest pain, unconsciousness) | Instant hardcoded response → "Call 112 immediately" |
+| Direct diagnosis request ("Do I have dengue?") | Blocked → "I cannot diagnose. See a doctor." |
+| Safe informational query | Passes through to Research + Synthesis |
+
+- **Fail-open design:** if Guardrail itself crashes, defaults to Category B (safe) — never blocks a real user
+- **`response_format: json_object`** forces valid JSON from Groq — zero parse failures
+- **Hardcoded emergency response** — never touches an LLM for Category A, zero hallucination risk
+
+---
+
+## ⚡ Latency Architecture
+
+Every design decision was made with sub-10s response in mind:
+
+| Agent | Approach | Latency |
+| :--- | :--- | :--- |
+| **Intake** | Groq Whisper Large V3 (fastest Whisper endpoint) | ~1-2s |
+| **Guardrail** | Groq Llama 3.3 70b (`max_tokens: 150`) | ~0.3s |
+| **Research** | P1 + P2 + P4 fire in parallel via `asyncio.gather()` | ~3-5s |
+| **Synthesis** | Gemini 2.5 Pro (`max_tokens: 500`) | ~2-3s |
+| **TTS** | Sarvam AI bulbul:v3 | ~1-2s |
+| **Total** | Agents partially overlap in execution | **~7-9s** |
+
+---
+
+## 🧰 Tech Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| Backend | FastAPI (Python) |
+| ASR | Groq Whisper Large V3 |
+| Translation | Groq Llama 3.3 70b Versatile |
+| Safety Guardrail | Groq Llama 3.3 70b Versatile |
+| Health Data Search | Serper.dev (Google Search API, `tbs=qdr:m3`) |
+| Advisory Generation | Gemini 2.5 Pro → Groq Llama 3.3 70b (auto fallback) |
+| TTS | Sarvam AI bulbul:v3 (Hindi: Priya, Tamil: Rahul) |
+| Frontend | Vanilla HTML / CSS / JS (single file, no framework) |
+
+---
+
+## 📂 Project Structure
+
+```
+voicehealth-ai/
+├── agents/
+│   ├── intake_agent.py         # Groq Whisper + Llama 3.3 70b translation
+│   ├── guardrail_agent.py      # Safety classification (Groq Llama 3.3 70b)
+│   ├── research_agent.py       # 5-level fallback + relevance scoring engine
+│   ├── synthesis_agent.py      # Gemini 2.5 Pro + Groq auto fallback
+│   └── tts_agent.py            # Sarvam AI bulbul:v3 TTS
+├── api/
+│   ├── main.py                 # FastAPI app entry point
+│   └── routes/
+│       ├── audio.py            # POST /audio/advise (full pipeline)
+│       └── health.py           # GET /health (status check)
+├── core/
+│   ├── config.py               # API keys via pydantic-settings + .env
+│   └── utils.py                # Language detection, shared helpers
+├── prompts/
+│   ├── guardrail_prompt.txt    # Classification rules for Guardrail agent
+│   └── synthesis_prompt.txt    # Advisory generation instructions
+├── frontend/
+│   └── index.html              # Single-file voice UI (no framework)
+├── tests/
+│   └── test_research_agent.py  # Unit + integration tests
+├── .env                        # API keys (gitignored)
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 🚀 Running Locally
+
+**1. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**2. Set up your `.env` file**
+```
+GROQ_API_KEY=your_groq_key
+GEMINI_API_KEY=your_gemini_key
+SERPER_API_KEY=your_serper_key
+SARVAM_API_KEY=your_sarvam_key
+```
+
+**3. Start the backend**
+```bash
+uvicorn api.main:app --reload
+```
+
+**4. Open the frontend**
+```
+Open frontend/index.html in your browser
+```
+
+**5. Test the API directly**
+```
+http://127.0.0.1:8000/docs
+```
+
+---
+
+## 📊 Data Sources
+
+| Source | Type | Used For |
+| :--- | :--- | :--- |
+| IDSP (`idsp.mohfw.gov.in`) | Government disease surveillance | P1 search |
+| MoHFW / NCDC / NCVBDC | Official health advisories | P2 search |
+| NDMA / IMD | Disaster + weather alerts (heatwave, floods) | P2 search |
+| NDTV / Times of India / The Hindu | Health news | P4 search |
+
+All data filtered to **last 90 days** using Serper's `tbs=qdr:m3` parameter.
+No personal health data is collected or stored.
 
 ---
 
 ## 🔮 Future Scope
 
-* Add more Indian languages (Marathi, Bengali, etc.)
-* Offline / low-connectivity support
-* Integration with government health services
-* Voice biomarker-based early risk detection (advanced)
+- Add Marathi, Bengali, Telugu support
+- Offline / low-connectivity mode
+- WhatsApp integration via Twilio
+- P3 IDSP PDF parsing pipeline (PyMuPDF + LLM summariser)
+- Voice biomarker-based early risk detection
 
 ---
 
 ## ⚠️ Disclaimer
 
-VoiceHealth AI provides **informational guidance only**.
-It does **not** offer:
-
-* Medical diagnosis
-* Treatment advice
-* Financial recommendations
-
-It is designed to **support awareness**, not replace healthcare professionals.
+VoiceHealth AI provides **general health awareness information only**.
+It does **not** offer medical diagnosis, treatment advice, or financial recommendations.
+All responses are grounded in live public health data from official government sources.
+Designed to **support awareness** — not replace healthcare professionals.
 
 ---
 
 ## 🏁 Summary
 
 VoiceHealth AI is not just an AI tool —
-it’s a **bridge between healthcare knowledge and people who are currently excluded from it**.
+it's a **bridge between healthcare knowledge and the people who are currently excluded from it**.
 
----
+Built for ET GenAI Hackathon · Problem Statement 5
